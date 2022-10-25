@@ -1,6 +1,5 @@
 package models //controler akan mengambil model
 import (
-	//"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
 
@@ -12,19 +11,6 @@ type Account struct {
 	Email    string `form:"email" json:"email" validate:"required"`
 	Password string `form:"password" json:"password" validate:"required"`
 }
-
-/* func (u *Account) BeforeCreate(tx *gorm.DB) (err error) {
-	hPass, _ := bcrypt.GenerateFromPassword([]byte(u.Password), 8)
-	u.Password = string(hPass)
-	return nil
-}
-
-func (u *Account) BeforeSave(tx *gorm.DB) (err error) {
-	hPass, _ := bcrypt.GenerateFromPassword([]byte(u.Password), 8)
-	u.Password = string(hPass)
-	return nil
-
-} */
 
 func CreateAccount(db *gorm.DB, newAccount *Account) (err error) {
 	//db.AutoMigrate(&Account{})
