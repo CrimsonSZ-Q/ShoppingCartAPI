@@ -5,6 +5,7 @@ import (
 
 type Account struct {
 	gorm.Model
+	Id          int    `form:"id" json:"id" validate:"required"`
 	Name        string `form:"name" json:"name" validate:"required"`
 	Username    string `form:"username" json:"username" validate:"required"`
 	Email       string `form:"email" json:"email" validate:"required"`
