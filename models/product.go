@@ -6,11 +6,13 @@ import (
 
 type Product struct {
 	gorm.Model
-	Id       int     `form:"id" json:"id" validate:"required"`
-	Name     string  `form:"name" json:"name" validate:"required"`
-	Image    string  `form:"image" json:"image" validate:"required"`
-	Quantity int     `form:"quantity" json:"quantity" validate:"required"`
-	Price    float32 `form:"price" json:"price" validate:"required"`
+	Id          int            `form:"id" json:"id" validate:"required"`
+	Name        string         `form:"name" json:"name" validate:"required"`
+	Image       string         `form:"image" json:"image" validate:"required"`
+	Quantity    int            `form:"quantity" json:"quantity" validate:"required"`
+	Price       float32        `form:"price" json:"price" validate:"required"`
+	Carts       []*Cart        `gorm:"many2many:cart_products;"`
+	Transaction []*Transaction `gorm:"many2many:transaksi_products;"`
 }
 
 // CRUD
@@ -28,7 +30,7 @@ func ReadProducts(db *gorm.DB, products *[]Product) (err error) {
 	}
 	return nil
 }
-func ReadProductById(db *gorm.DB, product *Product, id int) (err error) {
+func FindProductById(db *gorm.DB, product *Product, id int) (err error) {
 	err = db.Where("id=?", id).First(product).Error
 	if err != nil {
 		return err

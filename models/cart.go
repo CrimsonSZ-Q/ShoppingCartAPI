@@ -6,26 +6,37 @@ import (
 
 type Cart struct {
 	gorm.Model
-	Id       uint     `json:"id" validate:"required"`
-	ProductId     int  `form:"productid" json:"productid" validate:"required"`
-	UserId     uint  `form:"userid" json:"userid" validate:"required"`
-	Quantity int     `form:"quantity" json:"quantity" validate:"required"`
-	Total    float64 `form:"total" json:"total" validate:"required"`
-	Status     string  `form:"status" json:"status" gorm:"default:process"`
-	Product Product `gorm:"foreignkey:ProductId;references:Id"`
-	User Account `gorm:"foreignkey:UserId;references:Id"`
+	UserId   int
+	Products []*Product `gorm:"many2many : cart_products;"`
 }
 
-unc ViewCart(db *gorm.DB, cart *[]Cart, id int) (err error) {
-	err = db.Where(&Cart{UserId: id, Status: "process"}).Preload("User").Preload("Product").Find(cart).Error
+func CreateCart(db *gorm.DB, newCart *Cart, userId int) (err error) {
+	newCart.UserId = userId
+	err = db.Create(newCart).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func FindCart(db *gorm.DB, cart *Cart, product int, user int) (err error) {
-	err = db.Where(&Cart{ProductId: product, UserId: user, Status: "process"}).Preload("User").Preload("Product").First(cart).Error
+func ViewCart(db *gorm.DB, cart *[]Cart, id int) (err error) {
+	err = db.Where(&Cart{UserId: id}).Preload("Products").Find(cart).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func FindCart(db *gorm.DB, cart *Cart, id int) (err error) {
+	err = db.Where(&Cart{UserId: id}).Preload("User").Preload("Product").First(cart).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func FindCartById(db *gorm.DB, cart *Cart, id int) (err error) {
+	err = db.Where(&Cart{UserId: id}).First(cart).Error
 	if err != nil {
 		return err
 	}
@@ -34,22 +45,21 @@ func FindCart(db *gorm.DB, cart *Cart, product int, user int) (err error) {
 
 func UpdateCart(db *gorm.DB, cart *Cart) (err error) {
 	db.Save(cart)
-	
+
 	return nil
 }
 
-func AddtoCart(db *gorm.DB, data *Cart) (err error) {
-	err = db.Create(data).Error
+func AddtoCart(db *gorm.DB, data *Cart, product *Product) (err error) {
+	data.Products = append(data.Products, product)
+	err = db.Save(data).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func DeleteCart(db *gorm.DB, data *Cart, id int) (err error) {
-	err = db.Where("id=?", id).Delete(data).Error
-	if err != nil {
-		return err
-	}
+func DeleteProductInChart(db *gorm.DB, products []*Product, newCart *Cart, userId int) (err error) {
+	db.Model(&newCart).Association("Products").Delete(products)
+
 	return nil
 }

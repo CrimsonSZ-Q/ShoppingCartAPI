@@ -1,6 +1,7 @@
 package controllers
 
 import (
+	"fmt"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 	"shidqi/shoppingcartapi/database"
@@ -62,7 +63,7 @@ func (controller *ProductAPIController) GetDetailProduct(c *fiber.Ctx) error {
 	idn, _ := strconv.Atoi(id)
 
 	var product models.Product
-	err := models.ReadProductById(controller.Db, &product, idn)
+	err := models.FindProductById(controller.Db, &product, idn)
 	if err != nil {
 		return c.SendStatus(500) // http 500 internal server error
 	}
@@ -75,7 +76,7 @@ func (controller *ProductAPIController) GetDetailProduct2(c *fiber.Ctx) error {
 	idn, _ := strconv.Atoi(id)
 
 	var product models.Product
-	err := models.ReadProductById(controller.Db, &product, idn)
+	err := models.FindProductById(controller.Db, &product, idn)
 	if err != nil {
 		return c.SendStatus(500) // http 500 internal server error
 	}
@@ -88,7 +89,7 @@ func (controller *ProductAPIController) EditProduct(c *fiber.Ctx) error {
 	idn, _ := strconv.Atoi(id)
 
 	var product models.Product
-	err := models.ReadProductById(controller.Db, &product, idn)
+	err := models.FindProductById(controller.Db, &product, idn)
 	if err != nil {
 		return c.SendStatus(500) // http 500 internal server error
 	}
@@ -101,10 +102,31 @@ func (controller *ProductAPIController) EditProduct(c *fiber.Ctx) error {
 	product.Quantity = updateProduct.Quantity
 	product.Price = updateProduct.Price
 
+	if form, err := c.MultipartForm(); err == nil {
+		// => *multipart.Form
+
+		// Get all files from "image" key:
+		files := form.File["image"]
+		// => []*multipart.FileHeader
+
+		// Loop through files:
+		for _, file := range files {
+			fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
+			// => "tutorial.pdf" 360641 "application/pdf"
+
+			// Save the files to disk:
+			product.Image = fmt.Sprintf("public/upload/%s", file.Filename)
+			if err := c.SaveFile(file, fmt.Sprintf("public/upload/%s", file.Filename)); err != nil {
+				return err
+			}
+		}
+	}
 	// save product
 	models.UpdateProduct(controller.Db, &product)
 
-	return c.JSON(product)
+	return c.JSON(fiber.Map{
+		"message": "Berhasil Mengubah Product",
+	})
 
 }
 

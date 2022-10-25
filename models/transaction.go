@@ -7,12 +7,12 @@ import (
 type Transaction struct {
 	gorm.Model
 	Id       int `form:"id" json: "id" validate:"required"`
-	UserID   uint
-	Products []*Product `gorm:"many2many:transaksi_products;"`
+	UserId   int
+	Products []*Product `gorm:"many2many:transaction_products;"`
 }
 
-func CreateTransaction(db *gorm.DB, newTransaction *Transaction, userId uint, products []*Product) (err error) {
-	newTransaction.UserID = userId
+func CreateTransaction(db *gorm.DB, newTransaction *Transaction, userId int, products []*Product) (err error) {
+	newTransaction.UserId = userId
 	newTransaction.Products = products
 	err = db.Create(newTransaction).Error
 	if err != nil {
@@ -21,7 +21,7 @@ func CreateTransaction(db *gorm.DB, newTransaction *Transaction, userId uint, pr
 	return nil
 }
 
-func InsertProductToTransaction(db *gorm.DB, insertedTransaction *Cart, product *Product) (err error) {
+func AddProductToTransaction(db *gorm.DB, insertedTransaction *Cart, product *Product) (err error) {
 	insertedTransaction.Products = append(insertedTransaction.Products, product)
 	err = db.Save(insertedTransaction).Error
 	if err != nil {
@@ -30,7 +30,7 @@ func InsertProductToTransaction(db *gorm.DB, insertedTransaction *Cart, product 
 	return nil
 }
 
-func ReadAllProductsInTransaction(db *gorm.DB, transaction *Transaction, id int) (err error) {
+func ViewTransaction(db *gorm.DB, transaction *Transaction, id int) (err error) {
 	err = db.Where("id=?", id).Preload("Products").Find(transaction).Error
 	if err != nil {
 		return err
@@ -38,8 +38,8 @@ func ReadAllProductsInTransaction(db *gorm.DB, transaction *Transaction, id int)
 	return nil
 }
 
-func ReadTransactionById(db *gorm.DB, transactions *[]Transaction, id int) (err error) {
-	err = db.Where("user_id=?", id).Find(transactions).Error
+func ViewTransactionById(db *gorm.DB, trans *[]Transaction, id int) (err error) {
+	err = db.Where("user_id = ?", id).Find(trans).Error
 	if err != nil {
 		return err
 	}

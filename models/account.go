@@ -5,11 +5,12 @@ import (
 
 type Account struct {
 	gorm.Model
-	Id       int    `form:"id" json:"id" validate:"required"`
-	Name     string `form:"name" json:"name" validate:"required"`
-	Username string `form:"username" json:"username" validate:"required"`
-	Email    string `form:"email" json:"email" validate:"required"`
-	Password string `form:"password" json:"password" validate:"required"`
+	Name        string `form:"name" json:"name" validate:"required"`
+	Username    string `form:"username" json:"username" validate:"required"`
+	Email       string `form:"email" json:"email" validate:"required"`
+	Password    string `form:"password" json:"password" validate:"required"`
+	Cart        Cart
+	Transaction []Transaction
 }
 
 func CreateAccount(db *gorm.DB, newAccount *Account) (err error) {

@@ -56,7 +56,7 @@ func (controller *AccountAPIController) CreateAccount(c *fiber.Ctx) error {
 	// save account
 	err := models.CreateAccount(controller.Db, &account)
 	if err != nil {
-		return c.SendStatus(500)
+		return c.SendStatus(500) // http 500 internal server error
 	}
 	// if succeed
 	return c.JSON(account)
@@ -78,15 +78,15 @@ func (controller *AccountAPIController) LoginUser(c *fiber.Ctx) error {
 	// Find user
 	err2 := models.FindUserByUsername(controller.Db, &account, login.Username)
 	if err2 != nil {
-		return c.SendStatus(500) // Unsuccessful login (cannot find user)
+		return c.SendStatus(500) // http 500 internal server error
 	}
 
-	// Compare password
-	compare := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(login.Password))
-	status := compare == nil
-	if status { // compare == nil artinya hasil compare di atas true
+	// Compare the password
+	comparePass := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(login.Password))
+	status := comparePass == nil
+	if status {
 		sess.Set("username", login.Username)
-		sess.Set("id", account.Id)
+
 		sess.Save()
 
 		return c.JSON(fiber.Map{
@@ -101,7 +101,7 @@ func (controller *AccountAPIController) LoginUser(c *fiber.Ctx) error {
 
 func (controller *AccountAPIController) CheckSession(c *fiber.Ctx) error {
 	sess, _ := controller.store.Get(c)
-	name := sess.Get("name")
+	name := sess.Get("username")
 	id := sess.Get("id")
 
 	return c.JSON(fiber.Map{

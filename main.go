@@ -2,25 +2,39 @@ package main
 
 import (
 	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"shidqi/shoppingcartapi/controllers"
 )
 
 func main() {
-
+	store := session.New()
 	app := fiber.New()
 
 	// controllers
 	productApiController := controllers.InitProductAPIController()
-	// prodController := controllers.InitProductController()
+	accountApiController := controllers.InitAccountAPIController(store)
+	cartApiController := controllers.InitCartController()
+	transactionApiController := controllers.InitTransactionController(store)
 
-	p := app.Group("/api")
-	p.Get("/hello", productApiController.Greeting)
-	p.Get("/products", productApiController.GetAllProduct)
-	p.Post("/products", productApiController.CreateProduct)
-	p.Get("/products/productdetail", productApiController.GetDetailProduct)
-	p.Get("/products/detail/:id", productApiController.GetDetailProduct2)
-	p.Put("/products/:id", productApiController.EditProduct)
-	p.Delete("/products/:id", productApiController.DeleteProduct)
+	p := app.Group("/products")
+	c := app.Group("/Cart")
+	t := app.Group("/Transactions")
+
+	p.Get("/", productApiController.GetAllProduct)
+	p.Post("/", productApiController.CreateProduct)
+	p.Get("/productdetail", productApiController.GetDetailProduct)
+	p.Get("/detail/:id", productApiController.GetDetailProduct2)
+	p.Put("/:id", productApiController.EditProduct)
+	p.Delete("/:id", productApiController.DeleteProduct)
+	p.Get("/addtocart/:cartid/products/:productid", cartApiController.AddToCart)
+
+	app.Get("/accounts", accountApiController.GetAllAccount)
+	app.Post("/accounts/create", accountApiController.CreateAccount)
+	app.Post("/login", accountApiController.LoginUser)
+
+	c.Get("/:userid", cartApiController.GetDetailCart)
+
+	t.Get("/:userid", transactionApiController.InsertToTransaction)
 
 	app.Listen(":3000")
 }
