@@ -6,46 +6,50 @@ import (
 
 type Cart struct {
 	gorm.Model
-	UserID   uint
-	Products []*Product `gorm:"many2many:cart_products;"`
+	Id       uint     `json:"id" validate:"required"`
+	ProductId     int  `form:"productid" json:"productid" validate:"required"`
+	UserId     uint  `form:"userid" json:"userid" validate:"required"`
+	Quantity int     `form:"quantity" json:"quantity" validate:"required"`
+	Total    float64 `form:"total" json:"total" validate:"required"`
+	Status     string  `form:"status" json:"status" gorm:"default:process"`
+	Product Product `gorm:"foreignkey:ProductId;references:Id"`
+	User Account `gorm:"foreignkey:UserId;references:Id"`
 }
 
-func CreateCart(db *gorm.DB, newCart *Cart, userId uint) (err error) {
-	newCart.UserID = userId
-	err = db.Create(newCart).Error
+unc ViewCart(db *gorm.DB, cart *[]Cart, id int) (err error) {
+	err = db.Where(&Cart{UserId: id, Status: "process"}).Preload("User").Preload("Product").Find(cart).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func InsertProductToCart(db *gorm.DB, insertedCart *Cart, product *Product) (err error) {
-	insertedCart.Products = append(insertedCart.Products, product)
-	err = db.Save(insertedCart).Error
+func FindCart(db *gorm.DB, cart *Cart, product int, user int) (err error) {
+	err = db.Where(&Cart{ProductId: product, UserId: user, Status: "process"}).Preload("User").Preload("Product").First(cart).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func ReadAllProductsInCart(db *gorm.DB, cart *Cart, id int) (err error) {
-	err = db.Where("user_id=?", id).Preload("Products").Find(cart).Error
+func UpdateCart(db *gorm.DB, cart *Cart) (err error) {
+	db.Save(cart)
+	
+	return nil
+}
+
+func AddtoCart(db *gorm.DB, data *Cart) (err error) {
+	err = db.Create(data).Error
 	if err != nil {
 		return err
 	}
 	return nil
 }
 
-func ReadCartById(db *gorm.DB, cart *Cart, id int) (err error) {
-	err = db.Where("user_id=?", id).First(cart).Error
+func DeleteCart(db *gorm.DB, data *Cart, id int) (err error) {
+	err = db.Where("id=?", id).Delete(data).Error
 	if err != nil {
 		return err
 	}
-	return nil
-}
-
-func UpdateCart(db *gorm.DB, products []*Product, newCart *Cart, userId uint) (err error) {
-	db.Model(&newCart).Association("Products").Delete(products)
-
 	return nil
 }
