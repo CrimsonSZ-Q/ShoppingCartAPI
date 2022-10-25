@@ -43,14 +43,14 @@ func (controller *AccountAPIController) GetAllAccount(c *fiber.Ctx) error {
 func (controller *AccountAPIController) CreateAccount(c *fiber.Ctx) error {
 
 	var account models.Account
-	var convertpass LoginForm
+	var myForm LoginForm
 
 	if err := c.BodyParser(&account); err != nil {
 		return c.SendStatus(400)
 	}
 
-	convertpassword, _ := bcrypt.GenerateFromPassword([]byte(convertpass.Password), 10)
-	sHash := string(convertpassword)
+	hashPass, _ := bcrypt.GenerateFromPassword([]byte(myForm.Password), 10)
+	sHash := string(hashPass)
 	account.Password = sHash
 
 	// save account
@@ -95,7 +95,7 @@ func (controller *AccountAPIController) LoginUser(c *fiber.Ctx) error {
 	}
 
 	return c.JSON(fiber.Map{
-		"message": "Data not found",
+		"message": "Akun tidak ditemukan",
 	})
 }
 
