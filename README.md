@@ -3,7 +3,7 @@ Individu Project 1 - Golang Bootcamp
 </br>
 </br>
 Link Video </br>
-[soon]
+https://drive.google.com/drive/folders/1KIxu6-zaEJCc0TcQsqgBtKHrqDOXrKRy
 </br>
 </br>
 Thanks to</br>
