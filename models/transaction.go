@@ -11,6 +11,7 @@ type Transaction struct {
 	Products  []*Product `gorm:"many2many:transaction_products;"`
 }
 
+// CRUD
 func CreateTransaction(db *gorm.DB, newTransaction *Transaction, accountId uint, products []*Product) (err error) {
 	newTransaction.AccountID = accountId
 	newTransaction.Products = products

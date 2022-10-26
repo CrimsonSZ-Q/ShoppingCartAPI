@@ -4,6 +4,7 @@ import (
 	"gorm.io/gorm"
 )
 
+// CRUD
 type Cart struct {
 	gorm.Model
 	AccountID uint

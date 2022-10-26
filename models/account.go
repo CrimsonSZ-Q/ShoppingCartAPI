@@ -13,6 +13,7 @@ type Account struct {
 	Transactions []Transaction
 }
 
+// CRUD
 func CreateAccount(db *gorm.DB, newAccount *Account) (err error) {
 	//db.AutoMigrate(&Account{})
 	err = db.Create(newAccount).Error

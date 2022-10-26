@@ -29,6 +29,7 @@ func InitAccountAPIController(s *session.Store) *AccountAPIController {
 	return &AccountAPIController{Db: db, store: s}
 }
 
+//View all accounts
 func (controller *AccountAPIController) GetAllAccount(c *fiber.Ctx) error {
 	// load all products
 	var accounts []models.Account
@@ -77,6 +78,7 @@ func (controller *AccountAPIController) CreateAccount(c *fiber.Ctx) error {
 	return c.JSON(account)
 }
 
+//Login 
 func (controller *AccountAPIController) LoginUser(c *fiber.Ctx) error {
 	sess, err := controller.store.Get(c)
 	if err != nil {
@@ -128,6 +130,7 @@ func (controller *AccountAPIController) CheckSession(c *fiber.Ctx) error {
 	})
 }
 
+//Logout
 func (controller *AccountAPIController) Logout(c *fiber.Ctx) error {
 	sess, err := controller.store.Get(c)
 	if err != nil {

@@ -24,7 +24,7 @@ func InitTransactionController(s *session.Store) *TransactionController {
 	return &TransactionController{Db: db, store: s}
 }
 
-// GET /checkout/:userid
+// GET /out/:userid
 func (controller *TransactionController) InsertToTransaction(c *fiber.Ctx) error {
 	params := c.AllParams()
 
@@ -86,7 +86,7 @@ func (controller *TransactionController) GetTransaction(c *fiber.Ctx) error {
 
 }
 
-// GET /history/detail/:transaksiid
+// GET /transaction/detail/:transaksiid
 func (controller *TransactionController) DetailTransaction(c *fiber.Ctx) error {
 	params := c.AllParams()
 
