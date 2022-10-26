@@ -1,10 +1,12 @@
-# ShoppingCartAPI
+# ShoppingCartAPI</br>
 Individu Project 1 - Golang Bootcamp
-
-Link Video 
+</br>
+</br>
+Link Video </br>
 [soon]
-
-Thanks to
-Bapak Agus selaku mentor/dose yang sabar membimbing kami.
-Kak Farra selaku kakak pembimbing
-Teman - teman Bootcamp Golang phase 2 yang telah membantu mengajari saya.
+</br>
+</br>
+Thanks to</br>
+Bapak Agus selaku mentor/dose yang sabar membimbing kami.</br>
+Kak Farra selaku kakak pembimbing</br>
+Teman - teman Bootcamp Golang phase 2 yang telah membantu mengajari saya.</br>
