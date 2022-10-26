@@ -22,12 +22,6 @@ func InitProductAPIController() *ProductAPIController {
 	return &ProductAPIController{Db: db}
 }
 
-func (controller *ProductAPIController) Greeting(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{
-		"message": "Selamat Datang...",
-	})
-}
-
 // routing
 // GET /products
 func (controller *ProductAPIController) GetAllProduct(c *fiber.Ctx) error {
@@ -40,13 +34,27 @@ func (controller *ProductAPIController) GetAllProduct(c *fiber.Ctx) error {
 	return c.JSON(products)
 }
 
-// POST /products/create
+// POST /products
 func (controller *ProductAPIController) CreateProduct(c *fiber.Ctx) error {
 
 	var product models.Product
 
 	if err := c.BodyParser(&product); err != nil {
 		return c.SendStatus(400)
+	}
+
+	if form, err := c.MultipartForm(); err == nil {
+
+		files := form.File["image"]
+
+		for _, file := range files {
+			fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
+
+			product.Image = fmt.Sprintf("public/img/upload/%s", file.Filename)
+			if err := c.SaveFile(file, fmt.Sprintf("public/img/upload/%s", file.Filename)); err != nil {
+				return err
+			}
+		}
 	}
 	// save product
 	err := models.CreateProduct(controller.Db, &product)
@@ -57,21 +65,8 @@ func (controller *ProductAPIController) CreateProduct(c *fiber.Ctx) error {
 	return c.JSON(product)
 }
 
-// GET /products/productdetail?id=xxx
-func (controller *ProductAPIController) GetDetailProduct(c *fiber.Ctx) error {
-	id := c.Query("id")
-	idn, _ := strconv.Atoi(id)
-
-	var product models.Product
-	err := models.FindProductById(controller.Db, &product, idn)
-	if err != nil {
-		return c.SendStatus(500) // http 500 internal server error
-	}
-	return c.JSON(product)
-}
-
 // GET /products/detail/xxx
-func (controller *ProductAPIController) GetDetailProduct2(c *fiber.Ctx) error {
+func (controller *ProductAPIController) GetDetailProduct(c *fiber.Ctx) error {
 	id := c.Params("id")
 	idn, _ := strconv.Atoi(id)
 
@@ -103,29 +98,25 @@ func (controller *ProductAPIController) EditProduct(c *fiber.Ctx) error {
 	product.Price = updateProduct.Price
 
 	if form, err := c.MultipartForm(); err == nil {
-		// => *multipart.Form
 
-		// Get all files from "image" key:
 		files := form.File["image"]
-		// => []*multipart.FileHeader
 
-		// Loop through files:
 		for _, file := range files {
 			fmt.Println(file.Filename, file.Size, file.Header["Content-Type"][0])
-			// => "tutorial.pdf" 360641 "application/pdf"
 
-			// Save the files to disk:
-			product.Image = fmt.Sprintf("public/upload/%s", file.Filename)
-			if err := c.SaveFile(file, fmt.Sprintf("public/upload/%s", file.Filename)); err != nil {
+			product.Image = fmt.Sprintf("public/img/upload/%s", file.Filename)
+			if err := c.SaveFile(file, fmt.Sprintf("public/img/upload/%s", file.Filename)); err != nil {
 				return err
 			}
 		}
 	}
 	// save product
-	models.UpdateProduct(controller.Db, &product)
-
+	err1 := models.UpdateProduct(controller.Db, &product)
+	if err1 != nil {
+		return c.SendStatus(400)
+	}
 	return c.JSON(fiber.Map{
-		"message": "Berhasil Mengubah Product",
+		"message": "Berhasil Mengubah Produk",
 	})
 
 }
@@ -138,7 +129,7 @@ func (controller *ProductAPIController) DeleteProduct(c *fiber.Ctx) error {
 	var product models.Product
 	models.DeleteProductById(controller.Db, &product, idn)
 	return c.JSON(fiber.Map{
-		"message": "Data was deleted",
+		"message": "Produk berhasil dihapus",
 	})
 
 }

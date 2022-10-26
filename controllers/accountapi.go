@@ -1,6 +1,5 @@
 package controllers //controler akan mengambil model
 import (
-	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/session"
 	"golang.org/x/crypto/bcrypt"
@@ -21,15 +20,6 @@ type LoginForm struct {
 	Username string `form:"username" json:"username" validate:"required"`
 	Password string `form:"password" json:"password" validate:"required"`
 }
-
-type RegisterForm struct {
-	Name     string `form:"name" json:"name" validate:"required"`
-	Username string `form:"username" json:"username" validate:"required"`
-	Email    string `form:"email" json:"email" validate:"required"`
-	Password string `form:"password" json:"password" validate:"required"`
-}
-
-var checker = validator.New()
 
 func InitAccountAPIController(s *session.Store) *AccountAPIController {
 	db := database.InitDb()
@@ -53,31 +43,22 @@ func (controller *AccountAPIController) GetAllAccount(c *fiber.Ctx) error {
 func (controller *AccountAPIController) CreateAccount(c *fiber.Ctx) error {
 
 	var account models.Account
-	var myForm RegisterForm
 	var cart models.Cart
 
-	if err := c.BodyParser(&myForm); err != nil {
+	if err := c.BodyParser(&account); err != nil {
 		return c.SendStatus(400)
 	}
 
-	errChecker := checker.Struct(myForm)
-	if errChecker != nil {
-		return c.SendStatus(400)
-	}
-
-	errUsername := models.FindUserByUsername(controller.Db, &account, myForm.Username)
+	errUsername := models.FindUserByUsername(controller.Db, &account, account.Username)
 	if errUsername != gorm.ErrRecordNotFound {
 		return c.JSON(fiber.Map{
 			"message": "Username telah digunakan",
 		})
 	}
 
-	hashPass, _ := bcrypt.GenerateFromPassword([]byte(myForm.Password), 10)
+	hashPass, _ := bcrypt.GenerateFromPassword([]byte(account.Password), 10)
 	sHash := string(hashPass)
 	account.Password = sHash
-	account.Username = myForm.Username
-	account.Name = myForm.Name
-	account.Email = myForm.Email
 
 	// save account
 	err := models.CreateAccount(controller.Db, &account)
@@ -86,7 +67,7 @@ func (controller *AccountAPIController) CreateAccount(c *fiber.Ctx) error {
 	}
 
 	//create cart for account
-	errCart := models.CreateCart(controller.Db, &cart, account.Id)
+	errCart := models.CreateCart(controller.Db, &cart, account.ID)
 	if errCart != nil {
 		return c.SendStatus(500) // http 500 internal server error
 
@@ -119,12 +100,14 @@ func (controller *AccountAPIController) LoginUser(c *fiber.Ctx) error {
 	comparePass := bcrypt.CompareHashAndPassword([]byte(account.Password), []byte(login.Password))
 	status := comparePass == nil
 	if status {
-		sess.Set("username", login.Username)
+		sess.Set("username", account.Username)
+		sess.Set("accountId", account.ID)
 
 		sess.Save()
 
 		return c.JSON(fiber.Map{
-			"message": "Selamat Datang",
+			"message":  "Selamat Datang",
+			"username": account.Username,
 		})
 	}
 

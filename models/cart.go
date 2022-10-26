@@ -6,12 +6,12 @@ import (
 
 type Cart struct {
 	gorm.Model
-	UserId   int
-	Products []*Product `gorm:"many2many : cart_products;"`
+	AccountID uint
+	Products  []*Product `gorm:"many2many:cart_products;"`
 }
 
-func CreateCart(db *gorm.DB, newCart *Cart, userId int) (err error) {
-	newCart.UserId = userId
+func CreateCart(db *gorm.DB, newCart *Cart, accountId uint) (err error) {
+	newCart.AccountID = accountId
 	err = db.Create(newCart).Error
 	if err != nil {
 		return err
@@ -19,16 +19,8 @@ func CreateCart(db *gorm.DB, newCart *Cart, userId int) (err error) {
 	return nil
 }
 
-func ViewCart(db *gorm.DB, cart *[]Cart, id int) (err error) {
-	err = db.Where(&Cart{UserId: id}).Preload("Products").Find(cart).Error
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func FindCart(db *gorm.DB, cart *Cart, id int) (err error) {
-	err = db.Where(&Cart{UserId: id}).Preload("User").Preload("Product").First(cart).Error
+func ViewCart(db *gorm.DB, cart *Cart, id int) (err error) {
+	err = db.Where("account_id=?", id).Preload("Products").Find(cart).Error
 	if err != nil {
 		return err
 	}
@@ -36,7 +28,7 @@ func FindCart(db *gorm.DB, cart *Cart, id int) (err error) {
 }
 
 func FindCartById(db *gorm.DB, cart *Cart, id int) (err error) {
-	err = db.Where(&Cart{UserId: id}).First(cart).Error
+	err = db.Where("account_id=?", id).First(cart).Error
 	if err != nil {
 		return err
 	}
@@ -58,7 +50,7 @@ func AddtoCart(db *gorm.DB, data *Cart, product *Product) (err error) {
 	return nil
 }
 
-func DeleteProductInChart(db *gorm.DB, products []*Product, newCart *Cart, userId int) (err error) {
+func DeleteProductInChart(db *gorm.DB, products []*Product, newCart *Cart, accountId uint) (err error) {
 	db.Model(&newCart).Association("Products").Delete(products)
 
 	return nil

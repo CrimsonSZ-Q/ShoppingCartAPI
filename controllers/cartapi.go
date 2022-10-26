@@ -1,7 +1,7 @@
 package controllers
 
 import (
-	//"github.com/gofiber/fiber/v2/middleware/session"
+	"github.com/gofiber/fiber/v2/middleware/session"
 	"shidqi/shoppingcartapi/database"
 	"shidqi/shoppingcartapi/models"
 	"strconv"
@@ -11,15 +11,16 @@ import (
 )
 
 type CartController struct {
-	Db *gorm.DB
+	Db    *gorm.DB
+	store *session.Store
 }
 
-func InitCartController() *CartController {
+func InitCartController(s *session.Store) *CartController {
 	db := database.InitDb()
 
 	db.AutoMigrate(&models.Cart{})
 
-	return &CartController{Db: db}
+	return &CartController{Db: db, store: s}
 }
 
 // GET /addtocart/:cartid/products/:productid
@@ -61,12 +62,31 @@ func (controller *CartController) GetDetailCart(c *fiber.Ctx) error {
 	intCartId, _ := strconv.Atoi(params["cartid"])
 
 	var cart models.Cart
-	err := models.FindCart(controller.Db, &cart, intCartId)
+	err := models.FindCartById(controller.Db, &cart, intCartId)
 	if err != nil {
 		return c.SendStatus(500) // http 500 internal server error
 	}
 
+	err2 := models.ViewCart(controller.Db, &cart, intCartId)
+	if err2 != nil {
+		return c.JSON(fiber.Map{
+			"message": "Internal Server Error, Gagal mendapatkan Shopping Cart ",
+		})
+	}
+
+	sess, err := controller.store.Get(c)
+	if err != nil {
+		panic(err)
+	}
+	accountId := sess.Get("accountId")
+
+	if intCartId != 1 {
+		return c.SendStatus(400)
+	}
+
 	return c.JSON(fiber.Map{
-		"Message": "Shopping Cart",
+		"Message":   "Keranjang",
+		"Products":  cart.Products,
+		"AccountId": accountId,
 	})
 }

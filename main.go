@@ -13,28 +13,31 @@ func main() {
 	// controllers
 	productApiController := controllers.InitProductAPIController()
 	accountApiController := controllers.InitAccountAPIController(store)
-	cartApiController := controllers.InitCartController()
+	cartApiController := controllers.InitCartController(store)
 	transactionApiController := controllers.InitTransactionController(store)
 
+	//grouping for controller
 	p := app.Group("/products")
-	c := app.Group("/Cart")
-	t := app.Group("/Transactions")
-
-	p.Get("/", productApiController.GetAllProduct)
-	p.Post("/", productApiController.CreateProduct)
-	p.Get("/productdetail", productApiController.GetDetailProduct)
-	p.Get("/detail/:id", productApiController.GetDetailProduct2)
-	p.Put("/:id", productApiController.EditProduct)
-	p.Delete("/:id", productApiController.DeleteProduct)
-	p.Get("/addtocart/:cartid/products/:productid", cartApiController.AddToCart)
+	c := app.Group("/cart")
+	t := app.Group("/transactions")
 
 	app.Get("/accounts", accountApiController.GetAllAccount)
 	app.Post("/accounts/create", accountApiController.CreateAccount)
 	app.Post("/login", accountApiController.LoginUser)
+	app.Post("/logout", accountApiController.Logout)
 
-	c.Get("/:userid", cartApiController.GetDetailCart)
+	p.Get("/", productApiController.GetAllProduct)
+	p.Post("/", productApiController.CreateProduct)
+	p.Get("/detail/:id", productApiController.GetDetailProduct)
+	p.Put("/:id", productApiController.EditProduct)
+	p.Delete("/:id", productApiController.DeleteProduct)
+	p.Get("/addtocart/:cartid/products/:productid", cartApiController.AddToCart)
 
-	t.Get("/:userid", transactionApiController.InsertToTransaction)
+	c.Get("/:cartid", cartApiController.GetDetailCart)
+
+	t.Get("/out/:accountid", transactionApiController.InsertToTransaction)
+	t.Get("/list/:accountid", transactionApiController.GetTransaction)
+	t.Get("/detail/:transactionid", transactionApiController.DetailTransaction)
 
 	app.Listen(":3000")
 }

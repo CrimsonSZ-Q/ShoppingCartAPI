@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"gorm.io/driver/postgres"
+	//"github.com/glebarez/sqlite"
 	"gorm.io/gorm"
 )
 
@@ -18,6 +19,7 @@ func InitDb() *gorm.DB {
 func connectDB() *gorm.DB {
 	dsn := "host=localhost user=postgres password=pohon4785 dbname=restapi port=5432 sslmode=disable TimeZone=Asia/Shanghai"
 	Db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	//Db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 	if err != nil {
 		fmt.Println("Error...")
 		return nil
